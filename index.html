@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Studio With Jannat Shop & Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; }
+        .studio-card { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; max-width: 1000px; margin: 0 auto; }
+        .studio-header { background-color: #0d6efd; color: white; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; }
+        .studio-body { display: flex; flex-wrap: wrap; }
+        .image-area { flex: 1; min-width: 300px; padding: 20px; background: #f8f9fa; border-right: 1px solid #dee2e6; display: flex; gap: 15px; align-items: flex-start; justify-content: center; }
+        .settings-area { width: 350px; padding: 20px; background: #fff; }
+
+        #drop-area { border: 2px dashed #ccc; min-height: 400px; width: 100%; border-radius: 12px; display: flex; justify-content: center; align-items: center; background-color: #fff; position: relative; overflow: hidden; cursor: pointer; transition: 0.3s; }
+        #drop-area:hover { border-color: #0d6efd; background-color: #f1f8ff; }
+        #drop-area img { max-width: 100%; max-height: 400px; object-fit: contain; transition: all 0.1s ease; }
+        
+        #delete-btn { position: absolute; top: 15px; right: 15px; z-index: 100; display: none; width: 40px; height: 40px; border-radius: 8px; background-color: #dc3545; color: white; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 18px; cursor: pointer; transition: 0.2s; }
+        #delete-btn:hover { background-color: #c82333; transform: scale(1.05); }
+
+        .color-toolbar { display: flex; flex-direction: column; gap: 10px; padding: 5px; background: white; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s; }
+        .color-btn:hover { transform: scale(1.1); border-color: #555; }
+        .color-btn.active { border-color: #000; box-shadow: 0 0 0 2px rgba(0,0,0,0.2); }
+        .color-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; border-color: #ddd !important; }
+
+        .setting-row { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .setting-label { font-size: 14px; color: #555; width: 80px; }
+        .setting-input { flex: 1; margin: 0 10px; cursor: pointer; }
+        .setting-value { font-size: 12px; color: #777; width: 30px; text-align: right; }
+        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        .action-bar { padding: 0; }
+        .main-actions { display: flex; flex-wrap: wrap; }
+        .btn-action-custom { border-radius: 0; padding: 15px 10px; font-weight: bold; border: none; flex: 1 1 auto; text-align: center; display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 14px; border-right: 1px solid rgba(255,255,255,0.2); color: white; }
+        
+        .btn-crop-custom { background-color: #28a745; } .btn-crop-custom:hover { background-color: #218838; }
+        .btn-remove-1 { background-color: #dc3545; } .btn-remove-1:hover { background-color: #c82333; }
+        .btn-remove-2 { background-color: #e83e8c; } .btn-remove-2:hover { background-color: #d3367f; }
+        .btn-enhance-1 { background-color: #0d6efd; } .btn-enhance-1:hover { background-color: #0b5ed7; }
+        .btn-enhance-2 { background-color: #17a2b8; border-right: none;} .btn-enhance-2:hover { background-color: #138496; }
+
+        .btn-processing { padding: 15px; font-weight: bold; border: none; color: white; border-radius: 0; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .download-group { display: flex; }
+        .download-group button { flex: 1; border-radius: 0; padding: 12px; font-weight: 500; }
+
+        @media (max-width: 768px) {
+            .studio-card { display: flex; flex-direction: column; }
+            .studio-header { order: 1; }
+            .studio-body { display: contents; }
+            .action-bar { display: contents; }
+            .image-area { order: 2; flex-direction: column; border-right: none; }
+            .color-toolbar { flex-direction: row; justify-content: center; width: 100%; margin-top: 10px; }
+            .main-actions { order: 3; }
+            .settings-area { order: 4; width: 100%; border-left: none; border-top: 1px solid #dee2e6; }
+            .download-group { order: 5; flex-wrap: wrap; }
+            .download-group button { min-width: 50%; }
+        }
+        
+        /* Modal General Styles */
+        .modal-body { padding: 0; }
+        .img-container { width: 100%; height: 500px; overflow: hidden; background-color: #333; display: flex; justify-content: center; align-items: center; }
+        #image-to-crop { max-width: 100%; max-height: 100%; display: block; }
+        .crop-controls { background: #222; padding: 15px; color: white; }
+        .size-option { cursor: pointer; display: inline-flex; align-items: center; margin-right: 15px; }
+        .size-option input[type="radio"] { accent-color: #0d6efd; margin-right: 5px; transform: scale(1.2); }
+        .crop-controls input[type=range] { width: 100%; accent-color: #0d6efd; }
+
+        /* =========================================
+           EXACT ITLANCERBD PRINT MODAL STYLES 
+           ========================================= */
+        .dps-print-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.5rem; background-color: #374151; padding: 0.5rem; border-radius: 0.375rem; border: 1px solid #4B5563;
+        }
+        .dps-print-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 0.25rem; border: 1px solid #6B7280; }
+        .dps-btn-rotate {
+            position: absolute; top: -8px; right: -8px; width: 24px; height: 24px;
+            background-color: #2563EB; color: white; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 0; z-index: 10; transition: 0.2s;
+        }
+        .dps-btn-rotate:hover { background-color: #3B82F6; }
+        .dps-print-input-row { display: flex; align-items: center; justify-content: space-between; background-color: #1F2937; padding: 0.25rem; border-radius: 0.25rem; width: 100%; }
+        .dps-print-label { font-size: 10px; color: #9CA3AF; font-weight: 700; text-transform: uppercase; margin:0;}
+        
+        /* Updated Input Box - Arrows are now visible */
+        .dps-print-input {
+            width: 45px; /* Increased to fit the arrows */
+            height: 24px; text-align: center; background-color: #374151; border: 1px solid #4B5563;
+            border-radius: 0.25rem; color: white; font-size: 12px; padding-left: 5px; outline: none; margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="studio-card">
+    <div class="studio-header">Photo Studio With Jannat Shop & Studio</div>
+    <div class="studio-body">
+        <div class="image-area">
+            <input type="file" id="fileInput" style="display: none;" accept="image/*">
+            <div id="drop-area">
+                <button id="delete-btn" onclick="removeImage(event)" title="Remove Image"><i class="fas fa-trash-alt"></i></button>
+                <div id="drop-content" class="text-center">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-secondary mb-3"></i>
+                    <p class="text-secondary">Drag & Drop image here<br>or <strong>Click to select</strong></p>
+                </div>
+                <img id="main-img" src="" style="display: none;">
+            </div>
+
+            <div class="color-toolbar">
+                <div class="color-btn" style="background: transparent; background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%); background-size: 8px 8px;" onclick="changeColorAndSave('transparent')" title="Transparent"></div>
+                <div class="color-btn" style="background: #ffffff;" onclick="changeColorAndSave('#ffffff')"></div>
+                <div class="color-btn" style="background: #0d6efd;" onclick="changeColorAndSave('#0d6efd')"></div>
+                <div class="color-btn" style="background: #1E99F9;" onclick="changeColorAndSave('#1E99F9')"></div>
+                <div class="color-btn" style="background: #198754;" onclick="changeColorAndSave('#198754')"></div>
+                <div class="color-btn" style="background: #dc3545;" onclick="changeColorAndSave('#dc3545')"></div>
+                <div class="color-btn" style="background: #ffc107;" onclick="changeColorAndSave('#ffc107')"></div>
+                <div class="color-btn" style="background: #000000;" onclick="changeColorAndSave('#000000')"></div>
+                <hr style="margin: 2px 0; border-color: #ddd;">
+                <button id="btnUndo" class="color-btn bg-light text-secondary d-flex justify-content-center align-items-center p-0" style="border: 1px solid #ccc; font-size: 13px;" onclick="undo()" disabled title="Undo"><i class="fas fa-undo"></i></button>
+                <button id="btnRedo" class="color-btn bg-light text-secondary d-flex justify-content-center align-items-center p-0" style="border: 1px solid #ccc; font-size: 13px;" onclick="redo()" disabled title="Redo"><i class="fas fa-redo"></i></button>
+            </div>
+        </div>
+
+        <div class="settings-area">
+            <div class="section-title">Image Filters & Settings</div>
+            <div class="setting-row"><span class="setting-label">Rotate</span><input type="range" class="form-range setting-input" id="rotate" min="-180" max="180" value="0"><span class="setting-value" id="val-rotate">0</span></div>
+            <div class="setting-row"><span class="setting-label">Zoom</span><input type="range" class="form-range setting-input" id="zoom" min="0.5" max="3.0" step="0.1" value="1.0"><span class="setting-value" id="val-zoom">1.0</span></div>
+            <hr class="text-secondary">
+            <div class="setting-row"><span class="setting-label">Brightness</span><input type="range" class="form-range setting-input" id="brightness" min="0" max="200" value="100"><span class="setting-value" id="val-brightness">100</span></div>
+            <div class="setting-row"><span class="setting-label">Contrast</span><input type="range" class="form-range setting-input" id="contrast" min="0" max="200" value="100"><span class="setting-value" id="val-contrast">100</span></div>
+            <div class="setting-row"><span class="setting-label">Blur</span><input type="range" class="form-range setting-input" id="blur" min="0" max="20" value="0"><span class="setting-value" id="val-blur">0</span></div>
+            <div class="setting-row"><span class="setting-label">Hue</span><input type="range" class="form-range setting-input" id="hue" min="0" max="360" value="0"><span class="setting-value" id="val-hue">0</span></div>
+            <div class="setting-row"><span class="setting-label">Saturation</span><input type="range" class="form-range setting-input" id="saturate" min="0" max="200" value="100"><span class="setting-value" id="val-saturate">100</span></div>
+            <div class="setting-row"><span class="setting-label">Sepia</span><input type="range" class="form-range setting-input" id="sepia" min="0" max="100" value="0"><span class="setting-value" id="val-sepia">0</span></div>
+            <div class="setting-row"><span class="setting-label">Opacity</span><input type="range" class="form-range setting-input" id="opacity" min="0" max="100" value="100"><span class="setting-value" id="val-opacity">100</span></div>
+            <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="resetSettings(); saveState();">Reset Filters</button>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="main-actions" id="actionButtonsGroup">
+            <button class="btn-action-custom btn-crop-custom" onclick="openCropModal()"><i class="fas fa-crop"></i> Crop</button>
+        <!--    <button class="btn-action-custom btn-remove-1" onclick="processApiRemoveBgSimple()"><i class="fas fa-cut"></i> BG-First</button> 
+            <button class="btn-action-custom btn-remove-2" onclick="processApiRemoveBgAdvanced()"><i class="fas fa-scissors"></i> BG-AI</button>
+           <button class="btn-action-custom btn-enhance-1" onclick="processApiEnhanceSimple()"><i class="fas fa-magic"></i> En-Real</button>  
+            <button class="btn-action-custom btn-enhance-2" onclick="processApiEnhanceAdvanced()"><i class="fas fa-wand-magic-sparkles"></i> Enhan-AI</button>  -->
+			
+			
+			<button class="btn-action-custom btn-remove-2" onclick="processApiRemoveBgAdvanced()"><i class="fas fa-scissors"></i>ছবির ব্যাকগ্রাউন্ড রিমুভ</button>
+			<button class="btn-action-custom btn-enhance-2" onclick="processApiEnhanceAdvanced()"><i class="fas fa-wand-magic-sparkles"></i> ছবির রেজুলেশন বাড়ানো</button>
+			
+			
+			
+        </div>
+        <button class="btn-processing bg-secondary w-100" id="processingBtn" style="display: none;" disabled>
+            <span class="spinner-border spinner-border-sm"></span> <span id="processText">Processing...</span>
+        </button>
+        <div class="download-group">
+            <button class="btn btn-primary border-end" onclick="downloadImage('jpg')"><i class="fas fa-file-image"></i> Download JPG</button>
+            <button class="btn btn-success border-end" onclick="downloadImage('png')"><i class="fas fa-file-image"></i> Download PNG</button>
+            <button class="btn text-white" style="background-color: #7C3AED;" onclick="openPrintModal()"><i class="fas fa-print"></i> Print Sheet</button>
+        </div>
+    </div>
+</div>
+
+<p class="text-center mt-3 text-muted small">Made with ❤️ for Jannat Shop & Studio</p>
+
+<div class="modal fade" id="cropModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-body"><div class="img-container"><img id="image-to-crop" src=""></div></div>
+            <div class="crop-controls">
+                <div class="row align-items-center mb-3">
+                    <div class="col-12"><label class="text-white small mb-1"><i class="fas fa-sync-alt"></i> Rotate</label><input type="range" class="form-range" id="rotateRange" min="-45" max="45" value="0" step="1" oninput="rotateImage(this.value)"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex gap-3 text-white">
+                        <label class="size-option" onclick="setAspectRatio(39/49)"><input type="radio" name="cropSize" checked> 39×49mm</label>
+                        <label class="size-option" onclick="setAspectRatio(49/39)"><input type="radio" name="cropSize"> 49×39mm</label>
+                        <label class="size-option" onclick="setAspectRatio(NaN)"><input type="radio" name="cropSize"> Free</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-dark border-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-dark border-secondary bg-black" onclick="applyCrop()">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="printModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
+        <div class="modal-content border-0 shadow-lg" style="background-color: #1F2937; color: white; border-radius: 0.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            
+            <div class="modal-header" style="border-bottom: 1px solid #374151; padding: 1rem 1.25rem;">
+                <h5 class="modal-title fw-bold" style="font-size: 1.125rem; margin: 0;">Generate Print Sheet</h5>
+                <button type="button" data-bs-dismiss="modal" aria-label="Close" style="width: 32px; height: 32px; border-radius: 50%; background-color: #374151; border: none; color: #D1D5DB; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='#4B5563'; this.style.color='white'" onmouseout="this.style.backgroundColor='#374151'; this.style.color='#D1D5DB'">&times;</button>
+            </div>
+            
+            <div class="modal-body p-4" style="padding: 1.25rem;">
+                <p style="font-size: 0.875rem; color: #9CA3AF; margin-bottom: 1rem;">Set copy count & adjust rotation:</p>
+
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem;">
+                    
+                    <div class="dps-print-item">
+                        <div style="position: relative; display: inline-block;">
+                            <img id="printModalThumb" src="" class="dps-print-thumb">
+                            <button onclick="rotatePrintThumb()" title="Rotate 90°" class="dps-btn-rotate">
+                                <i class="fas fa-rotate-right" style="font-size: 11px;"></i>
+                            </button>
+                        </div>
+                        <div style="width: 100%; display: flex; flex-direction: column; gap: 0.25rem;">
+                            <div class="dps-print-input-row">
+                                <span class="dps-print-label">PP</span>
+                                <input type="number" id="printPPCount" value="1" min="0" class="dps-print-input">
+                            </div>
+                            <div class="dps-print-input-row">
+                                <span class="dps-print-label">ST</span>
+                                <input type="number" id="printSTCount" value="0" min="0" class="dps-print-input">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid #374151;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="checkbox" id="chkPrintCenter" style="width: 16px; height: 16px; accent-color: #2563EB; cursor: pointer; margin: 0;">
+                            <label for="chkPrintCenter" style="font-size: 0.875rem; color: #D1D5DB; cursor: pointer; margin: 0;">Center</label>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="checkbox" id="chkWideSpacing" style="width: 16px; height: 16px; accent-color: #2563EB; cursor: pointer; margin: 0;">
+                            <label for="chkWideSpacing" title="40x50mm size with 12px gap (4 per row)" style="font-size: 0.875rem; color: #D1D5DB; cursor: pointer; margin: 0;">Wide (4/Row)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.25rem;">
+                    <button id="btnGeneratePrint" onclick="generatePrintSheet()" style="width: 100%; background-color: #7C3AED; color: white; font-weight: 700; padding: 0.75rem; border-radius: 0.5rem; border: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; font-size: 1rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#9333EA'" onmouseout="this.style.backgroundColor='#7C3AED'">
+                        <i class="fas fa-print"></i><span>Generate For Print</span>
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+
+
+<script>
+    const fileInput = document.getElementById("fileInput");
+    const dropArea = document.getElementById('drop-area');
+    const mainImgId = 'main-img';
+    let currentBgColor = 'transparent';
+    let cropper; 
+    let historyStack = []; let currentHistoryIndex = -1; const maxHistory = 30;
+
+    const cropModalElement = document.getElementById('cropModal');
+    const cropModal = new bootstrap.Modal(cropModalElement);
+    const imageToCrop = document.getElementById('image-to-crop');
+
+    dropArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', function() { handleFiles(this.files); this.value = null; });
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults, false));
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    dropArea.addEventListener('drop', e => handleFiles(e.dataTransfer.files), false);
+
+    function handleFiles(files) {
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (!file.type.startsWith('image/')) return alert('Please upload an image file.');
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('drop-content').style.display = 'none';
+                const img = document.getElementById(mainImgId);
+                img.src = e.target.result; img.style.display = 'block'; 
+                document.getElementById('delete-btn').style.display = 'block';
+                resetSettings(); setBgColor(currentBgColor);
+                setTimeout(() => { updateImageFilters(); historyStack = []; currentHistoryIndex = -1; saveState(); }, 100);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeImage(e) {
+        e.stopPropagation(); 
+        const img = document.getElementById(mainImgId); img.src = ''; img.style.display = 'none'; 
+        document.getElementById('delete-btn').style.display = 'none'; document.getElementById('drop-content').style.display = 'block';
+        fileInput.value = ''; resetSettings(); setBgColor('transparent');
+        historyStack = []; currentHistoryIndex = -1; updateUndoRedoButtons();
+    }
+
+    const sliders = ['rotate', 'zoom', 'brightness', 'contrast', 'blur', 'hue', 'saturate', 'sepia', 'opacity'];
+    sliders.forEach(id => {
+        const sliderElement = document.getElementById(id);
+        sliderElement.addEventListener('input', e => { document.getElementById(`val-${id}`).innerText = e.target.value; updateImageFilters(); });
+        sliderElement.addEventListener('change', () => saveState());
+    });
+
+    function updateImageFilters() {
+        const img = document.getElementById(mainImgId);
+        if (!img || img.src === '') return;
+        const rotate = document.getElementById('rotate').value; const zoom = document.getElementById('zoom').value;
+        const brightness = document.getElementById('brightness').value; const contrast = document.getElementById('contrast').value;
+        const blur = document.getElementById('blur').value; const hue = document.getElementById('hue').value;
+        const saturate = document.getElementById('saturate').value; const sepia = document.getElementById('sepia').value; const opacity = document.getElementById('opacity').value;
+        img.style.transform = `rotate(${rotate}deg) scale(${zoom})`;
+        img.style.filter = `brightness(${brightness}%) contrast(${contrast}%) blur(${blur}px) hue-rotate(${hue}deg) saturate(${saturate}%) sepia(${sepia}%) opacity(${opacity}%)`;
+    }
+
+    function resetSettings() {
+        document.getElementById('rotate').value = 0; document.getElementById('zoom').value = 1.0;
+        document.getElementById('brightness').value = 100; document.getElementById('contrast').value = 100;
+        document.getElementById('blur').value = 0; document.getElementById('hue').value = 0;
+        document.getElementById('saturate').value = 100; document.getElementById('sepia').value = 0; document.getElementById('opacity').value = 100;
+        sliders.forEach(id => document.getElementById(`val-${id}`).innerText = document.getElementById(id).value);
+        updateImageFilters();
+    }
+
+    function setBgColor(color) { currentBgColor = color; const img = document.getElementById(mainImgId); if(img) img.style.backgroundColor = color; }
+    function changeColorAndSave(color) { setBgColor(color); saveState(); }
+
+    function saveState() {
+        const img = document.getElementById(mainImgId); if (!img || img.src === '') return;
+        const state = { src: img.src, bgColor: currentBgColor, filters: {} };
+        sliders.forEach(id => state.filters[id] = document.getElementById(id).value);
+        if (currentHistoryIndex < historyStack.length - 1) historyStack = historyStack.slice(0, currentHistoryIndex + 1);
+        const lastState = historyStack[historyStack.length - 1];
+        if (lastState && lastState.src === state.src && lastState.bgColor === state.bgColor && JSON.stringify(lastState.filters) === JSON.stringify(state.filters)) return; 
+        historyStack.push(state);
+        if (historyStack.length > maxHistory) historyStack.shift(); else currentHistoryIndex++;
+        updateUndoRedoButtons();
+    }
+
+    function restoreState(state) {
+        if (!state) return; const img = document.getElementById(mainImgId);
+        img.src = state.src; setBgColor(state.bgColor); 
+        sliders.forEach(id => { document.getElementById(id).value = state.filters[id]; document.getElementById(`val-${id}`).innerText = state.filters[id]; });
+        updateImageFilters();
+    }
+
+    function undo() { if (currentHistoryIndex > 0) { currentHistoryIndex--; restoreState(historyStack[currentHistoryIndex]); updateUndoRedoButtons(); } }
+    function redo() { if (currentHistoryIndex < historyStack.length - 1) { currentHistoryIndex++; restoreState(historyStack[currentHistoryIndex]); updateUndoRedoButtons(); } }
+    function updateUndoRedoButtons() {
+        document.getElementById('btnUndo').disabled = currentHistoryIndex <= 0;
+        document.getElementById('btnRedo').disabled = currentHistoryIndex >= historyStack.length - 1;
+    }
+
+    function openCropModal() {
+        const img = document.getElementById(mainImgId); if(!img || img.src === '') return alert("Please upload an image first.");
+        imageToCrop.src = img.src; cropModal.show();
+        cropModalElement.addEventListener('shown.bs.modal', function () {
+            if(cropper) cropper.destroy();
+            cropper = new Cropper(imageToCrop, { viewMode: 1, dragMode: 'move', aspectRatio: 39/49, autoCropArea: 0.8, background: false, responsive: true });
+            document.getElementById('rotateRange').value = 0; document.querySelector('input[name="cropSize"][checked]').click(); 
+        }, { once: true });
+    }
+
+    function setAspectRatio(ratio) { if(cropper) cropper.setAspectRatio(ratio); }
+    function rotateImage(degree) { if(cropper) cropper.rotateTo(parseInt(degree)); }
+    function applyCrop() { if(!cropper) return; document.getElementById(mainImgId).src = cropper.getCroppedCanvas().toDataURL(); cropModal.hide(); saveState(); }
+
+    function toggleButtonsLoading(isLoading, text = "Processing...") {
+        const actionGroup = document.getElementById('actionButtonsGroup');
+        const processBtn = document.getElementById('processingBtn');
+        const processText = document.getElementById('processText');
+        if(isLoading) { actionGroup.style.display = 'none'; processText.innerText = text; processBtn.style.display = 'block'; } 
+        else { actionGroup.style.display = 'flex'; processBtn.style.display = 'none'; }
+    }
+
+    async function getBakedBlob(forceSolidBackground = false) {
+        const img = document.getElementById(mainImgId);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = img.naturalWidth;
+        let height = img.naturalHeight;
+        const MAX_SIZE = 1200; 
+
+        if (width > MAX_SIZE || height > MAX_SIZE) {
+            const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+            width = width * ratio;
+            height = height * ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        if (currentBgColor !== 'transparent') {
+            ctx.fillStyle = currentBgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else if (forceSolidBackground) {
+            ctx.fillStyle = '#ffffff'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.translate(width/2, height/2);
+        const rotate = document.getElementById('rotate').value;
+        const zoom = document.getElementById('zoom').value;
+        ctx.rotate(rotate * Math.PI / 180);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-width/2, -height/2);
+
+        const brightness = document.getElementById('brightness').value; const contrast = document.getElementById('contrast').value;
+        const blur = document.getElementById('blur').value; const hue = document.getElementById('hue').value;
+        const saturate = document.getElementById('saturate').value; const sepia = document.getElementById('sepia').value; const opacity = document.getElementById('opacity').value;
+        
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) blur(${blur}px) hue-rotate(${hue}deg) saturate(${saturate}%) sepia(${sepia}%) opacity(${opacity}%)`;
+        
+        ctx.drawImage(img, 0, 0, width, height);
+
+        return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.90));
+    }
+
+    async function processApiRemoveBgSimple() {
+        if(!document.getElementById(mainImgId).src) return alert("Upload an image first!");
+        toggleButtonsLoading(true, "Removing BG (1)...");
+        try {
+            const blob = await getBakedBlob(false); 
+            const fd = new FormData(); fd.append('file', blob, "image.jpg");
+            const res = await fetch('https://api.itlancerbd.com/remove-background', { method: 'POST', body: fd });
+            if (!res.ok) throw new Error("Server Error: " + res.status);
+            document.getElementById(mainImgId).src = URL.createObjectURL(await res.blob());
+            setBgColor('#1E99F9'); resetSettings(); saveState(); 
+        } catch (err) { alert("Error: " + err.message); } finally { toggleButtonsLoading(false); }
+    }
+
+    async function processApiRemoveBgAdvanced() {
+        if(!document.getElementById(mainImgId).src) return alert("Upload an image first!");
+        toggleButtonsLoading(true, "Removing BG (High Quality AI)...");
+        try {
+            const blob = await getBakedBlob(false);
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let randomId = ''; for (let i = 0; i < 13; i++) randomId += chars.charAt(Math.floor(Math.random() * chars.length));
+            const pid = `19-20-28-${randomId}`;
+
+            const fd = new FormData(); fd.append('myFile[]', blob, "image.jpg"); fd.append('pid', pid); fd.append('ipath', `../segments/static/rem_seg/${pid}/img/0.png`); fd.append('opath', `../segments/static/rem_seg/${pid}/orignal.png`);
+            const uploadRes = await fetch('https://api-photostudio-v2.vercel.app/remove-bg', { method: 'POST', body: fd });
+            if (!uploadRes.ok) throw new Error("Server Error: " + uploadRes.status);
+            const data = await uploadRes.json();
+            
+            let foundPath = data?.filename || data?.[0]?.filename || data?.files?.[0]?.filename || data?.[0]?.path;
+            if (!foundPath) throw new Error('No result path found.');
+            let imageId = String(foundPath).indexOf('static/rem_seg') !== -1 ? String(foundPath).slice(String(foundPath).indexOf('static/rem_seg')).replace(/^\.\/+/, '') : new URL(String(foundPath)).pathname.replace(/^\/+/, '');
+
+            const proxyUrl = `https://api-photostudio-v2.vercel.app/proxy-image?url=${encodeURIComponent(`https://segment.pi7.org/${imageId}`)}`;
+            const proxyRes = await fetch(proxyUrl);
+            if (!proxyRes.ok) throw new Error(`Proxy Error: ${proxyRes.status}`);
+            document.getElementById(mainImgId).src = URL.createObjectURL(await proxyRes.blob());
+            setBgColor('#1E99F9'); resetSettings(); saveState(); 
+        } catch (err) { alert("Error: " + err.message); } finally { toggleButtonsLoading(false); }
+    }
+
+    async function processApiEnhanceSimple() {
+        if(!document.getElementById(mainImgId).src) return alert("Upload an image first!");
+        toggleButtonsLoading(true, "Enhancing Image (1)...");
+        try {
+            const blob = await getBakedBlob(true);
+            const fd = new FormData(); fd.append('file', blob, "image.jpg");
+            const res = await fetch('https://api.itlancerbd.com/enhance', { method: 'POST', body: fd });
+            if (!res.ok) throw new Error("Server Error: " + res.status);
+            document.getElementById(mainImgId).src = URL.createObjectURL(await res.blob());
+            setBgColor('transparent'); resetSettings(); saveState(); 
+        } catch (err) { alert("Error: " + err.message); } finally { toggleButtonsLoading(false); }
+    }
+
+    async function processApiEnhanceAdvanced() {
+        if(!document.getElementById(mainImgId).src) return alert("Upload an image first!");
+        toggleButtonsLoading(true, "Enhancing Image (High Quality AI)...");
+        try {
+            const blob = await getBakedBlob(true); 
+            const fd = new FormData(); fd.append('file', blob, "image.jpg");
+            const res = await fetch('https://api.itlancerbd.com/ai-enhance', { method: 'POST', body: fd });
+            if (!res.ok) throw new Error("Server Error: " + res.status);
+            document.getElementById(mainImgId).src = URL.createObjectURL(await res.blob());
+            setBgColor('transparent'); resetSettings(); saveState(); 
+        } catch (err) { alert("Error: " + err.message); } finally { toggleButtonsLoading(false); }
+    }
+
+    function downloadImage(type) {
+        const img = document.getElementById(mainImgId);
+        if(!img || img.src === '') return alert("No image to download!");
+
+        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+
+        const brightness = document.getElementById('brightness').value; const contrast = document.getElementById('contrast').value;
+        const blur = document.getElementById('blur').value; const hue = document.getElementById('hue').value;
+        const saturate = document.getElementById('saturate').value; const sepia = document.getElementById('sepia').value; const opacity = document.getElementById('opacity').value;
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) blur(${blur}px) hue-rotate(${hue}deg) saturate(${saturate}%) sepia(${sepia}%) opacity(${opacity}%)`;
+
+        if(type === 'jpg' || type === 'color') { ctx.fillStyle = (currentBgColor === 'transparent') ? '#ffffff' : currentBgColor; ctx.fillRect(0,0, canvas.width, canvas.height); }
+
+        ctx.translate(canvas.width/2, canvas.height/2);
+        const rotate = document.getElementById('rotate').value; const zoom = document.getElementById('zoom').value;
+        ctx.rotate(rotate * Math.PI / 180); ctx.scale(zoom, zoom); ctx.translate(-canvas.width/2, -canvas.height/2);
+        ctx.drawImage(img, 0, 0);
+
+        const link = document.createElement('a'); link.download = `jannat-studio-${Date.now()}.${type === 'png' ? 'png' : 'jpg'}`;
+        link.href = canvas.toDataURL(type === 'png' ? 'image/png' : 'image/jpeg'); link.click();
+    }
+
+    // ==========================================
+    // EXACT ITLANCERBD PRINT SHEET LOGIC
+    // ==========================================
+    
+    let printRotation = 0;
+    
+    async function openPrintModal() {
+        const imgElement = document.getElementById(mainImgId);
+        if(!imgElement || imgElement.src === '') return alert("Upload an image first!");
+        
+        toggleButtonsLoading(true, "Loading Print Settings...");
+        try {
+            const blob = await getBakedBlob(currentBgColor !== 'transparent');
+            const url = URL.createObjectURL(blob);
+            const thumb = document.getElementById('printModalThumb');
+            
+            // Reset Values
+            printRotation = 0;
+            thumb.style.transform = `rotate(0deg)`;
+            thumb.src = url;
+            document.getElementById('printPPCount').value = 1;
+            document.getElementById('printSTCount').value = 0;
+            document.getElementById('chkPrintCenter').checked = true;
+            document.getElementById('chkWideSpacing').checked = false;
+
+            const printModalElement = document.getElementById('printModal');
+            const modalInstance = new bootstrap.Modal(printModalElement);
+            modalInstance.show();
+        } catch(e) {
+            alert("Error: " + e.message);
+        } finally {
+            toggleButtonsLoading(false);
+        }
+    }
+
+    function rotatePrintThumb() {
+        printRotation += 90;
+        const thumb = document.getElementById('printModalThumb');
+        thumb.style.transform = `rotate(${printRotation}deg)`;
+    }
+
+    async function getPrintBase64() {
+        const img = document.getElementById(mainImgId);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = img.naturalWidth;
+        let height = img.naturalHeight;
+        const MAX_SIZE = 1200; 
+
+        if (width > MAX_SIZE || height > MAX_SIZE) {
+            const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+            width = width * ratio;
+            height = height * ratio;
+        }
+
+        let rNorm = (printRotation % 360 + 360) % 360;
+        let canvasW = width, canvasH = height;
+        if (rNorm === 90 || rNorm === 270) {
+            canvasW = height;
+            canvasH = width;
+        }
+
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+
+        if (currentBgColor !== 'transparent') {
+            ctx.fillStyle = currentBgColor;
+            ctx.fillRect(0, 0, canvasW, canvasH);
+        } else {
+            ctx.fillStyle = '#ffffff'; 
+            ctx.fillRect(0, 0, canvasW, canvasH);
+        }
+
+        ctx.translate(canvasW/2, canvasH/2);
+        ctx.rotate(rNorm * Math.PI / 180);
+        
+        // Apply Filters
+        const rotate = document.getElementById('rotate').value;
+        const zoom = document.getElementById('zoom').value;
+        ctx.rotate(rotate * Math.PI / 180);
+        ctx.scale(zoom, zoom);
+        
+        const brightness = document.getElementById('brightness').value; 
+        const contrast = document.getElementById('contrast').value;
+        const blur = document.getElementById('blur').value; 
+        const hue = document.getElementById('hue').value;
+        const saturate = document.getElementById('saturate').value; 
+        const sepia = document.getElementById('sepia').value; 
+        const opacity = document.getElementById('opacity').value;
+        
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) blur(${blur}px) hue-rotate(${hue}deg) saturate(${saturate}%) sepia(${sepia}%) opacity(${opacity}%)`;
+        
+        ctx.translate(-width/2, -height/2);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        return canvas.toDataURL('image/jpeg', 0.95);
+    }
+
+    async function generatePrintSheet() {
+        const ppCount = parseInt(document.getElementById('printPPCount').value) || 0;
+        const stCount = parseInt(document.getElementById('printSTCount').value) || 0;
+        
+        if (ppCount === 0 && stCount === 0) {
+            alert("No copies selected to print");
+            return;
+        }
+
+        const btn = document.getElementById('btnGeneratePrint');
+        const oldHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+        btn.disabled = true;
+
+        try {
+            const isWide = document.getElementById('chkWideSpacing').checked;
+            const isCenter = document.getElementById('chkPrintCenter').checked;
+
+            const currentPP_W = isWide ? 40 : 38.3;
+            const currentPP_H = isWide ? 50 : 48.3;
+            const gapVal = isWide ? 6 : 5.5;
+            const gapValBottom = isWide ? 6 : 5.5;
+            const justifyVal = isCenter ? 'center' : 'flex-start';
+
+            const STAMP_IMG_W_MM = 20;
+            const STAMP_IMG_H_MM = 25;
+
+            const base64 = await getPrintBase64();
+            const r = Math.abs(printRotation) % 360;
+            const isLandscape = (r === 90 || r === 270);
+
+            const imagesData = [];
+            for (let i = 0; i < ppCount; i++) {
+                imagesData.push({ src: base64, isLandscape: isLandscape, type: 'pp' });
+            }
+            for (let i = 0; i < stCount; i++) {
+                imagesData.push({ src: base64, isLandscape: isLandscape, type: 'stamp' });
+            }
+
+            const printWindow = window.open('', '_blank');
+            const imagesHTML = imagesData.map(imgData => {
+                let w, h;
+                if (imgData.type === 'pp') {
+                    w = imgData.isLandscape ? currentPP_H : currentPP_W;
+                    h = imgData.isLandscape ? currentPP_W : currentPP_H;
+                } else {
+                    w = imgData.isLandscape ? STAMP_IMG_H_MM : STAMP_IMG_W_MM;
+                    h = imgData.isLandscape ? STAMP_IMG_W_MM : STAMP_IMG_H_MM;
+                }
+
+                return `<div class="photo-wrapper"><img src="${imgData.src}" style="width:${w}mm; height:${h}mm;" class="photo-item" /></div>`;
+            }).join('');
+
+            printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="bn">
+            <head>
+                <meta charset="UTF-8">
+                <title>Photo Studio Print Sheet</title>
+                <style>
+                    @page { size: A4 portrait; margin: 0; }
+                    body { margin: 0; padding: 0; background-color: #525659; display: flex; justify-content: center; min-height: 100vh; padding-top: 20px; padding-bottom: 80px; font-family: Arial, sans-serif; }
+                    .instruction-box { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #056839; color: #ffffff; border-top: 1px solid #ffeeba; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+                    .page-container { 
+                        width: 210mm; min-height: 297mm; background-color: white; 
+                        display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: ${justifyVal}; 
+                        padding-left: 1mm; padding-top: 2mm; box-shadow: 0 4px 10px rgba(0,0,0,0.3); box-sizing: border-box; 
+                    }
+					.photo-wrapper { 
+							padding-right: ${gapVal}px; padding-bottom: ${gapValBottom}px; margin-right: ${gapVal}px; margin-bottom: ${gapValBottom}px; 
+							display: inline-flex; 
+						}
+						.photo-item { object-fit: contain; display: block; }
+						@media print {
+							.instruction-box { display: none !important; }
+							body { background-color: white; display: block; padding: 0; }
+							.page-container { width: 100%; min-height: auto; box-shadow: none; margin: 0; padding-top: 4mm; padding-left: 3mm; }
+							.photo-wrapper { border: none !important; -webkit-print-color-adjust: exact; }
+						}
+                </style>
+            </head>
+            <body>
+                <div class="page-container">${imagesHTML}</div>
+                <div class="instruction-box">প্রিন্ট করতে <b>Ctrl+Shift+P</b> চাপুন।</div>
+                <script>
+                    window.onload = () => { setTimeout(() => window.print(), 500); }
+                <\/script>
+            </body>
+            </html>
+            `);
+            printWindow.document.close();
+            
+            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('printModal'));
+            modalInstance.hide();
+            
+        } catch(e) {
+            alert("Print failed: " + e.message);
+        } finally {
+            btn.innerHTML = oldHTML;
+            btn.disabled = false;
+        }
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.job-card');
+
+            cards.forEach(card => {
+                const deadlineStr = card.getAttribute('data-deadline');
+                const deadlineDate = new Date(deadlineStr).getTime();
+                
+                const daysEl = card.querySelector('.days');
+                const hoursEl = card.querySelector('.hours');
+                const minutesEl = card.querySelector('.minutes');
+                const secondsEl = card.querySelector('.seconds');
+                const deadlineTextEl = card.querySelector('.deadline-text');
+
+                const interval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = deadlineDate - now;
+
+                    // সময় শেষ হয়ে গেলে
+                    if (distance < 0) {
+                        clearInterval(interval);
+                        daysEl.innerText = "00";
+                        hoursEl.innerText = "00";
+                        minutesEl.innerText = "00";
+                        secondsEl.innerText = "00";
+                        deadlineTextEl.innerText = "আবেদনের মেয়াদ শেষ";
+                        return;
+                    }
+
+                    // দিন, ঘণ্টা, মিনিট এবং সেকেন্ড হিসাব
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    daysEl.innerText = days.toString().padStart(2, '0');
+                    hoursEl.innerText = hours.toString().padStart(2, '0');
+                    minutesEl.innerText = minutes.toString().padStart(2, '0');
+                    secondsEl.innerText = seconds.toString().padStart(2, '0');
+
+                }, 1000);
+            });
+        });
+    </script>
+    
+    <script>
+    // ১. মাউসের রাইট ক্লিক বন্ধ করা
+    document.addEventListener('contextmenu', function(e) { e.preventDefault(); handleViolation(); });
+    // ২. কিবোর্ড শর্টকাট লক
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            handleViolation(); return false;
+        }
+    };
+    // ৩. ভায়োলেশন হ্যান্ডেল
+    function handleViolation() {
+        let attempts = sessionStorage.getItem("violation_count") || 0; attempts++; sessionStorage.setItem("violation_count", attempts);
+        if (attempts == 1) { alert("⚠️ সতর্কবার্তা!\n\nআপনি সোর্স কোড দেখার অবৈধ চেষ্টা করেছেন। এই সাইটের সিকিউরিটি পলিসি অনুযায়ী এটি নিষিদ্ধ। এর জন্য আপনাকে ব্লক করা হলো"); } 
+        else { blockSite(); }
+    }
+    // ৪. সাইট ব্লক 
+    function blockSite() {
+        document.body.innerHTML = `
+            <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:Arial, sans-serif; text-align:center; background:#ff0000; color:#fff; padding:20px; position:fixed; top:0; left:0; width:100%; z-index:999999;">
+                <div>
+                    <h1 style="font-size:50px;">🚫 আপনাকে ব্লক করা হয়েছে! 🚫</h1>
+                    <p style="font-size:22px; margin: 20px 0;">আপনি অবৈধভাবে সোর্স কোড দেখার চেষ্টা করেছেন। সিকিউরিটি প্রোটোকল অনুযায়ী আপনার অ্যাক্সেস বন্ধ করা হয়েছে।</p>
+                    <button onclick="clearAndReload()" style="padding:15px 30px; font-size:18px; cursor:pointer; background:#fff; color:#ff0000; border:none; border-radius:10px; font-weight:bold; margin-top:20px;">আনব্লক এবং রিফ্রেশ করুন</button>
+                </div>
+            </div>`;
+    }
+    function clearAndReload() { sessionStorage.removeItem("violation_count"); location.reload(); }
+
+    // ৫. অটোমেটিক ডেভেলপার টুলস ডিটেকশন
+    setInterval(function() {
+        const threshold = 160;
+        const isDevToolsOpen = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
+        if (isDevToolsOpen) {
+            let attempts = sessionStorage.getItem("violation_count") || 0;
+            if (attempts >= 1) { blockSite(); }
+        }
+    }, 2000);
+    </script>
+
+</body>
+</html>

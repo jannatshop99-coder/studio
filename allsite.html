@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jannat Shop & Studio</title>
+    <style>
+        /* বেসিক রিসেট এবং ফন্ট */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f9f9f9; }
+
+        /* নোটিশ বার (হলুদ অংশ) */
+        .notice-bar { background-color: #ffcc00; display: flex; align-items: center; padding: 0; margin-bottom: 20px; overflow: hidden; }
+        .notice-label { background-color: #b30000; color: white; padding: 10px 20px; font-weight: bold; z-index: 10; }
+        .notice-text { flex: 1; padding: 10px; white-space: nowrap; overflow: hidden; color: #000; font-weight: 600; }
+
+        /* আধুনিক CSS Marquee অ্যানিমেশন */
+        .marquee-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite; /* স্পিড পরিবর্তন করতে 20s পরিবর্তন করুন */
+        }
+
+        /* মাউস রাখলে স্ক্রলিং থেমে যাওয়ার কোড */
+        .notice-text:hover .marquee-content {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* গ্রিড কন্টেইনার */
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .service-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; justify-items: center; }
+
+        /* সার্ভিস আইটেম ডিজাইন */
+        .service-item { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .icon-box { width: 175px; height: 175px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        .icon-box:hover { transform: scale(1.05); }
+        .icon-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* বাটনের ডিজাইন */
+        .service-btn { background-color: #ff9900; color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; text-align: center; width: 100%; max-width: 140px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: none; cursor: pointer; }
+        .service-btn:hover { background-color: #ff0000; transform: scale(1.1); }
+
+        footer { background-color: #001f3f; color: white; text-align: center; padding: 15px; margin-top: 40px; font-size: 14px; }
+
+        /* স্লাইডার ডিজাইন */
+        .banner-container { width: 100%; max-width: 1200px; margin: 10px auto; overflow: hidden; position: relative; border: 3px solid #333; border-radius: 10px; box-shadow: 0 4px 4px rgba(0,0,0,0.1); }
+        .slider { display: flex; width: 300%; transition: transform 0.8s ease-in-out; }
+        .slider img { width: 33.33%; height: auto; display: block; object-fit: cover; }
+
+        /* পিসি ও মোবাইল ব্যানারের ডিসপ্লে সেটিং (ডিফল্টভাবে পিসি ব্যানার দেখাবে, মোবাইল লুকাবে) */
+        .desktop-banner { display: block; }
+        .mobile-banner { display: none; }
+
+        /* রেসপন্সিভ ডিজাইন (মোবাইলের জন্য) */
+        @media (max-width: 768px) {
+            .service-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .icon-box { width: 140px; height: 140px; }
+            
+            /* মোবাইলে পিসি ব্যানার লুকাবে এবং মোবাইল ব্যানার দেখাবে */
+            .desktop-banner { display: none; }
+            .mobile-banner { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="banner-container desktop-banner">
+        <div class="slider" id="desktop-slider">
+            <img src="<?php echo htmlspecialchars($settings['banner1']); ?>" alt="Banner 1">
+            <img src="<?php echo htmlspecialchars($settings['banner2']); ?>" alt="Banner 2">
+            <img src="<?php echo htmlspecialchars($settings['banner3']); ?>" alt="Banner 3">
+        </div>
+    </div>
+
+    <div class="banner-container mobile-banner">
+        <div class="slider" id="mobile-slider">
+            <img src="up/uploads/Bannar-4.jpg" alt="Mobile Banner 1">
+            <img src="up/uploads/Bannar-5.jpg" alt="Mobile Banner 2">
+            <img src="up/uploads/Bannar-6.jpg" alt="Mobile Banner 3">
+        </div>
+    </div>
+
+    <div class="notice-bar">
+        <div class="notice-label">নোটিশ</div>
+        <div class="notice-text">
+            <span class="marquee-content"><?php echo htmlspecialchars($settings['notice_text']); ?></span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="service-grid">
+            
+            <?php
+            $services_query = $conn->query("SELECT * FROM home_services ORDER BY id DESC");
+            if($services_query && $services_query->num_rows > 0) {
+                while($srv = $services_query->fetch_assoc()) {
+            ?>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="<?php echo htmlspecialchars($srv['url_link']); ?>" target="blank"> <img src="<?php echo htmlspecialchars($srv['icon_url']); ?>" alt="Icon"> </a>
+                </div>
+                <a href="<?php echo htmlspecialchars($srv['url_link']); ?>" target="blank" class="service-btn"><?php echo htmlspecialchars($srv['title']); ?></a>
+            </div>
+            <?php 
+                }
+            } 
+            ?>
+            
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://services.nidw.gov.bd/nid-pub/" target="blank"> <img src="img/1.png" alt="NID"> </a>
+                </div>
+                <a href="https://services.nidw.gov.bd/nid-pub/" target="blank" class="service-btn">NID Card</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://epassport.gov.bd/" target="blank"> <img src="img/2.png" alt="Passport"> </a>
+                </div>
+                <a href="https://epassport.gov.bd/" target="blank" class="service-btn">Passport</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://bdris.gov.bd/" target="blank"> <img src="img/3.png" alt="Birth Certificate"> </a>
+                </div>
+                <a href="https://bdris.gov.bd/" target="blank" class="service-btn">Birth Certificate</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://eticket.railway.gov.bd/" target="blank"> <img src="img/4.png" alt="Railway"> </a>
+                </div>
+                <a href="https://eticket.railway.gov.bd/" target="blank" class="service-btn">Railway Ticket</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://bsp.brta.gov.bd/" target="blank"> <img src="img/5.png" alt="Driving License"> </a>
+                </div>
+                <a href="https://bsp.brta.gov.bd/" target="blank" class="service-btn">Driving License</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://land.gov.bd/" target="blank"> <img src="img/6.png" alt="Land Service"> </a>
+                </div>
+                <a href="https://land.gov.bd/" target="blank" class="service-btn">Land Service</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://pcc.police.gov.bd/ords/r/pcc/pcc/home" target="blank"> <img src="img/7.png" alt="Police Clearance"> </a>
+                </div>
+                <a href="https://pcc.police.gov.bd/ords/r/pcc/pcc/home" target="blank" class="service-btn">Police Clearance</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://ibas.finance.gov.bd/acs/general/sales#/home/dashboard" target="blank"> <img src="img/8.png" alt="Passport Payment"> </a>
+                </div>
+                <a href="https://ibas.finance.gov.bd/acs/general/sales#/home/dashboard" target="blank" class="service-btn">Passport Payment</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://challanverification.finance.gov.bd/echalan/" target="blank"> <img src="img/9.png" alt="Chalan Verify"> </a>
+                </div>
+                <a href="https://challanverification.finance.gov.bd/echalan/" target="blank" class="service-btn">Chalan Verify</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://secure.incometax.gov.bd/TINHome" target="blank"> <img src="img/10.png" alt="Tin Certificate"> </a>
+                </div>
+                <a href="https://secure.incometax.gov.bd/TINHome" target="blank" class="service-btn">Tin Certificate</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://etaxnbr.gov.bd/#/landing-page" target="blank"> <img src="img/11.png" alt="e-Return"> </a>
+                </div>
+                <a href="https://etaxnbr.gov.bd/#/landing-page" target="blank" class="service-btn">e-Return</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://gd.police.gov.bd/Auth/Account/Login" target="blank"> <img src="img/12.png" alt="Online GD"> </a>
+                </div>
+                <a href="https://gd.police.gov.bd/Auth/Account/Login" target="blank" class="service-btn">Online GD</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                   <a href="https://services.nidw.gov.bd/nid-pub/card-status" target="blank"> <img src="img/13.png" alt="Smart Card"> </a>
+                </div>
+                <a href="https://services.nidw.gov.bd/nid-pub/card-status" target="blank" class="service-btn">Smart Card</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://everify.bdris.gov.bd/" target="blank"> <img src="img/14.png" alt="BRC Check"> </a>
+                </div>
+                <a href="https://everify.bdris.gov.bd/" target="blank" class="service-btn">BRC Check</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://everify.bdris.gov.bd/UDRNVerification" target="blank"> <img src="img/15.png" alt="DRC Check"> </a>
+                </div>
+                <a href="https://everify.bdris.gov.bd/UDRNVerification" target="blank" class="service-btn">DRC Check</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.remove.bg/upload" target="blank"> <img src="img/16.png" alt="BG Remove"> </a>
+                </div>
+                <a href="https://www.remove.bg/upload" target="blank" class="service-btn">BG Remove</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.cutout.pro/photo-enhancer-sharpener-upscaler/upload" target="blank"> <img src="img/17.png" alt="Photo Enhance"> </a>
+                </div>
+                <a href="https://www.cutout.pro/photo-enhancer-sharpener-upscaler/upload" target="blank" class="service-btn">Photo Enhance</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://airbrush.com/image-enhancer" target="blank"> <img src="img/18.png" alt="Photo Enhance"> </a>
+                </div>
+                <a href="https://airbrush.com/image-enhancer" target="blank" class="service-btn">Photo Enhance</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://web.whatsapp.com/" target="blank"> <img src="img/19.png" alt="Whatsapp Web"> </a>
+                </div>
+                <a href="https://web.whatsapp.com/" target="blank" class="service-btn">Whatsapp Web</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.facebook.com/" target="blank"> <img src="img/20.png" alt="FaceBook"> </a>
+                </div>
+                <a href="https://www.facebook.com/" target="blank" class="service-btn">FaceBook</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://chatgpt.com/" target="blank"> <img src="img/21.png" alt="ChatGPT"> </a>
+                </div>
+                <a href="https://chatgpt.com/" target="blank" class="service-btn">ChatGPT</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.freepik.com/" target="blank"> <img src="img/22.png" alt="FreePik"> </a>
+                </div>
+                <a href="https://www.freepik.com/" target="blank" class="service-btn">FreePik</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.sejda.com/pdf-editor" target="blank"> <img src="img/23.png" alt="Pdf Editor"> </a>
+                </div>
+                <a href="https://www.sejda.com/pdf-editor" target="blank" class="service-btn">Pdf Editor</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.photopea.com/" target="blank"> <img src="img/24.png" alt="Ps & Ai Editor"> </a>
+                </div>
+                <a href="https://www.photopea.com/" target="blank" class="service-btn">Ps & Ai Editor</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://ipemis.dpe.gov.bd/results" target="blank"> <img src="img/25.png" alt="PSC Results"> </a>
+                </div>
+                <a href="https://ipemis.dpe.gov.bd/results" target="blank" class="service-btn">PSC Results</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://eboardresults.com/en/ebr.app/home/" target="blank"> <img src="img/26.png" alt="Education Results"> </a>
+                </div>
+                <a href="https://eboardresults.com/en/ebr.app/home/" target="blank" class="service-btn">Education Results</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="http://www.educationboardresults.gov.bd/" target="blank"> <img src="img/27.png" alt="Education Results"> </a>
+                </div>
+                <a href="http://www.educationboardresults.gov.bd/" target="blank" class="service-btn">Education Results</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://efile.dhakaeducationboard.gov.bd/index.php/eservice/menu" target="blank"> <img src="img/28.png" alt="Certificate Correction"> </a>
+                </div>
+                <a href="https://efile.dhakaeducationboard.gov.bd/index.php/eservice/menu" target="blank" class="service-btn">Certificate Correction</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://result.bou.ac.bd/" target="blank"> <img src="img/29.png" alt="OU Result"> </a>
+                </div>
+                <a href="https://result.bou.ac.bd/" target="blank" class="service-btn">OU Result</a>
+            </div>
+            <div class="service-item">
+                <div class="icon-box">
+                   <a href="https://gsa.teletalk.com.bd/" target="blank"> <img src="img/30.png" alt="School Admission"> </a>
+                </div>
+                <a href="https://gsa.teletalk.com.bd/" target="blank" class="service-btn">School Admission</a>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Jannat Shop &copy; Copyright 2026</p>
+    </footer>
+    
+
+    <script>
+    const desktopSlider = document.getElementById('desktop-slider');
+    const mobileSlider = document.getElementById('mobile-slider');
+    let index = 0;
+
+    function slideShow() {
+        index++;
+        if (index > 2) { index = 0; }
+        
+        // ডেস্কটপ স্লাইডার আপডেট
+        if (desktopSlider) {
+            desktopSlider.style.transform = `translateX(${-index * 33.33}%)`;
+        }
+        
+        // মোবাইল স্লাইডার আপডেট
+        if (mobileSlider) {
+            mobileSlider.style.transform = `translateX(${-index * 33.33}%)`;
+        }
+    }
+    setInterval(slideShow, 6000);
+    </script>
+    
+    <script>
+    // ১. মাউসের রাইট ক্লিক বন্ধ করা এবং টু-স্টেপ ওয়ার্নিং
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        handleViolation();
+    });
+
+    // ২. কিবোর্ড শর্টকাট লক এবং ওয়ার্নিং
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+           (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || 
+           (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            handleViolation();
+            return false;
+        }
+    };
+
+    // ৩. ভায়োলেশন হ্যান্ডেল করার ফাংশন
+    function handleViolation() {
+        let attempts = sessionStorage.getItem("violation_count") || 0;
+        attempts++;
+        sessionStorage.setItem("violation_count", attempts);
+
+        if (attempts == 1) {
+            alert("⚠️ সতর্কবার্তা!\n\nআপনি সোর্স কোড দেখার অবৈধ চেষ্টা করেছেন। এই সাইটের সিকিউরিটি পলিসি অনুযায়ী এটি নিষিদ্ধ। এর জন্য আপনাকে ব্লক করা হলো");
+        } else {
+            blockSite();
+        }
+    }
+
+    // ৪. সাইট ব্লক করার ফাংশন
+    function blockSite() {
+        document.body.innerHTML = `
+            <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:Arial, sans-serif; text-align:center; background:#ff0000; color:#fff; padding:20px; position:fixed; top:0; left:0; width:100%; z-index:999999;">
+                <div>
+                    <h1 style="font-size:50px;">🚫 আপনাকে ব্লক করা হয়েছে! 🚫</h1>
+                    <p style="font-size:22px; margin: 20px 0;">আপনি অবৈধভাবে সোর্স কোড দেখার চেষ্টা করেছেন। সিকিউরিটি প্রোটোকল অনুযায়ী আপনার অ্যাক্সেস বন্ধ করা হয়েছে।</p>
+                    <p>এটি আনব্লক করতে চাইলে নিচের বাটনে ক্লিক করুন।</p>
+                    <button onclick="clearAndReload()" style="padding:15px 30px; font-size:18px; cursor:pointer; background:#fff; color:#ff0000; border:none; border-radius:10px; font-weight:bold; margin-top:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">আনব্লক এবং রিফ্রেশ করুন</button>
+                </div>
+            </div>`;
+    }
+
+    // আনব্লক করার ফাংশন
+    function clearAndReload() {
+        sessionStorage.removeItem("violation_count");
+        location.reload();
+    }
+
+    // ৫. অটোমেটিক ডেভেলপার টুলস ডিটেকশন (ব্যাকগ্রাউন্ড চেক)
+    setInterval(function() {
+        const threshold = 160;
+        const isDevToolsOpen = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
+        
+        if (isDevToolsOpen) {
+            let attempts = sessionStorage.getItem("violation_count") || 0;
+            if (attempts >= 1) {
+                blockSite();
+            }
+        }
+    }, 2000);
+    </script>
+    
+    
+    
+    
+    
+        <script>
+    setInterval(function() {
+        
+        const startTime = performance.now();
+        
+        debugger; 
+        
+        const endTime = performance.now();
+
+        if (endTime - startTime > 100) {
+			
+            document.body.innerHTML ="<h1 style='text-align:center; margin-top:20%; color:red;'>আপনি অবৈধ্য ভাবে Developer Tools এ প্রবেশ করেছেন। Developer Tools are not allowed!</h1>";
+            
+            
+            // window.location.reload(); 
+        }
+    }, 500); 
+	</script>
+
+    
+    
+    
+    
+</body>
+</html>

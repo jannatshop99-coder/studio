@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jannat Shop & Studio</title>
+    <style>
+        /* বেসিক রিসেট এবং ফন্ট */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+        }
+
+        /* হেডার সেকশন (লাল অংশ) */
+        header {
+            background-color: #ff0000;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        header span {
+            font-size: 14px;
+            display: block;
+            margin-top: 5px;
+        }
+
+
+
+        /* নোটিশ বার (হলুদ অংশ) */
+        .notice-bar {
+            background-color: #ffcc00;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .notice-label {
+            background-color: #b30000; /* গাঢ় লাল */
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .notice-text {
+            flex: 1;
+            padding: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* গ্রিড কন্টেইনার (আইকন গুলোর জন্য) */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .service-grid {
+            display: grid;
+            /* কম্পিউটার ভিউ: ৬টি কলাম */
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 20px;
+            justify-items: center;
+        }
+
+        /* সার্ভিস আইটেম ডিজাইন */
+        .service-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* গোল আইকন বক্স */
+        .icon-box {
+            width: 175px;
+            height: 175px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .icon-box:hover {
+            transform: scale(1.05);
+        }
+
+        .icon-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* বাটনের ডিজাইন */
+        .service-btn {
+            background-color: #ff9900; /* কমলা */
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            max-width: 140px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+        }
+
+        .service-btn:hover {
+            background-color: #ff0000;
+			transform: scale(1.1);
+        }
+
+        /* ফুটার */
+        footer {
+            background-color: #001f3f;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 40px;
+            font-size: 14px;
+        }
+
+        /* =========================================
+           মোবাইল রেসপন্সিভ ডিজাইন (Media Query)
+           ========================================= */
+        @media (max-width: 768px) {
+            .service-grid {
+                /* মোবাইল ভিউ: ২টি কলাম */
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 15px;
+            }
+
+            .icon-box {
+                width: 90px;
+                height: 90px;
+            }
+            
+            header h1 {
+                font-size: 24px;
+            }
+        }
+		
+		
+		
+		/* স্লাইডার কন্টেইনার ডিজাইন */
+.banner-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 10px auto;
+    overflow: hidden; /* বাইরের অংশ কেটে ফেলার জন্য */
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* স্লাইডার মুভমেন্ট ডিজাইন */
+.slider {
+    display: flex;
+    width: 300%; /* ৩টি ছবির জন্য ৩০০% প্রস্থ */
+    transition: transform 0.8s ease-in-out; /* স্লাইডিং স্মুথনেস */
+}
+
+/* স্লাইডারের ভেতরে ছবির সাইজ */
+.slider img {
+    width: 33.33%; /* প্রতি স্লাইডে ১টি ছবি দেখাবে */
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+    </style>
+</head>
+<body>
+
+   <!-- ...  <header>
+        <h1>JANNAT Shop & Studio</h1>
+    </header> -->
+
+    <div class="banner-container">
+		<div class="slider" id="slider">
+			<img src="img/banner2.jpg" alt="Banner 1">
+			<img src="img/banner1.jpg" alt="Banner 2">
+			<img src="img/banner3.jpg" alt="Banner 3">
+		</div>
+	</div>
+
+    <div class="notice-bar">
+        <div class="notice-label">নোটিশ</div>
+        <div class="notice-text">
+            <marquee behavior="scroll" direction="left"> 
+		
+	কম্পিউটার, ষ্টুডিও ও ফটোকপি ব্যবসায়ীদের চিন্তার আর পেরেশানির দিন শেষ। এখানে অনলাইনের সকল কাজের জন্য জরুরী ওয়েব সাইট গুলো পেয়ে যাবেন। সকল সার্ভিস ফ্রিতে ব্যবহার করুন। ❤ ধন্যবাদ ❤
+		</marquee>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="service-grid">
+            
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://services.nidw.gov.bd/nid-pub/" target="blank"> <img src="img/1.png" alt="NID"> </a>
+                </div>
+                <a href="https://services.nidw.gov.bd/nid-pub/" target="blank" class="service-btn">NID Card</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://epassport.gov.bd/" target="blank"> <img src="img/2.png" alt="Passport">
+                </div>
+                <a href="https://epassport.gov.bd/" target="blank" class="service-btn">Passport</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://bdris.gov.bd/" target="blank"> <img src="img/3.png" alt="Birth Certificate">
+                </div>
+                <a href="https://bdris.gov.bd/" target="blank" class="service-btn">Birth Certificate</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://eticket.railway.gov.bd/" target="blank"> <img src="img/4.png" alt="Railway">
+                </div>
+                <a href="https://eticket.railway.gov.bd/" target="blank" class="service-btn">Railway Ticket</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://bsp.brta.gov.bd/" target="blank"> <img src="img/5.png" alt="Driving License">
+                </div>
+                <a href="https://bsp.brta.gov.bd/" target="blank" class="service-btn">Driving License</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://land.gov.bd/" target="blank"> <img src="img/6.png" alt="Land Service">
+                </div>
+                <a href="https://land.gov.bd/" target="blank" class="service-btn">Land Service</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://pcc.police.gov.bd/ords/r/pcc/pcc/home" target="blank"> <img src="img/7.png" alt="Police Clearance">
+                </div>
+                <a href="https://pcc.police.gov.bd/ords/r/pcc/pcc/home" target="blank" class="service-btn">Police Clearance</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://ibas.finance.gov.bd/acs/general/sales#/home/dashboard" target="blank"> <img src="img/8.png" alt="Passport Payment">
+                </div>
+                <a href="https://ibas.finance.gov.bd/acs/general/sales#/home/dashboard" target="blank" class="service-btn">Passport Payment</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://challanverification.finance.gov.bd/echalan/" target="blank"> <img src="img/9.png" alt="Chalan Verify">
+                </div>
+                <a href="https://challanverification.finance.gov.bd/echalan/" target="blank" class="service-btn">Chalan Verify</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://secure.incometax.gov.bd/TINHome" target="blank"> <img src="img/10.png" alt="Tin Certificate">
+                </div>
+                <a href="https://secure.incometax.gov.bd/TINHome" target="blank" class="service-btn">Tin Certificate</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://etaxnbr.gov.bd/#/landing-page" target="blank"> <img src="img/11.png" alt="e-Return">
+                </div>
+                <a href="https://etaxnbr.gov.bd/#/landing-page" target="blank" class="service-btn">e-Return</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://gd.police.gov.bd/Auth/Account/Login" target="blank"> <img src="img/12.png" alt="Online GD">
+                </div>
+                <a href="https://gd.police.gov.bd/Auth/Account/Login" target="blank" class="service-btn">Online GD</a>
+            </div>
+			
+			
+			<div class="service-item">
+                <div class="icon-box">
+                   <a href="https://services.nidw.gov.bd/nid-pub/card-status" target="blank"> <img src="img/13.png" alt="Smart Card">
+                </div>
+                <a href="https://services.nidw.gov.bd/nid-pub/card-status" target="blank" class="service-btn">Smart Card</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://everify.bdris.gov.bd/" target="blank"> <img src="img/14.png" alt="BRC Check">
+                </div>
+                <a href="https://everify.bdris.gov.bd/" target="blank" class="service-btn">BRC Check</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://everify.bdris.gov.bd/UDRNVerification" target="blank"> <img src="img/15.png" alt="DRC Check">
+                </div>
+                <a href="https://everify.bdris.gov.bd/UDRNVerification" target="blank" class="service-btn">DRC Check</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.remove.bg/upload" target="blank"> <img src="img/16.png" alt="BG Remove">
+                </div>
+                <a href="https://www.remove.bg/upload" target="blank" class="service-btn">BG Remove</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.cutout.pro/photo-enhancer-sharpener-upscaler/upload" target="blank"> <img src="img/17.png" alt="Photo Enhance">
+                </div>
+                <a href="https://www.cutout.pro/photo-enhancer-sharpener-upscaler/upload" target="blank" class="service-btn">Photo Enhance</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://airbrush.com/image-enhancer" target="blank"> <img src="img/18.png" alt="Photo Enhance">
+                </div>
+                <a href="https://airbrush.com/image-enhancer" target="blank" class="service-btn">Photo Enhance</a>
+            </div>
+			
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://web.whatsapp.com/" target="blank"> <img src="img/19.png" alt="Whatsapp Web">
+                </div>
+                <a href="https://web.whatsapp.com/" target="blank" class="service-btn">Whatsapp Web</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.facebook.com/" target="blank"> <img src="img/20.png" alt="FaceBook">
+                </div>
+                <a href="https://www.facebook.com/" target="blank" class="service-btn">FaceBook</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://chatgpt.com/" target="blank"> <img src="img/21.png" alt="ChatGPT">
+                </div>
+                <a href="https://chatgpt.com/" target="blank" class="service-btn">ChatGPT</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.freepik.com/" target="blank"> <img src="img/22.png" alt="FreePik">
+                </div>
+                <a href="https://www.freepik.com/" target="blank" class="service-btn">FreePik</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.sejda.com/pdf-editor" target="blank"> <img src="img/23.png" alt="Pdf Editor">
+                </div>
+                <a href="https://www.sejda.com/pdf-editor" target="blank" class="service-btn">Pdf Editor</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://www.photopea.com/" target="blank"> <img src="img/24.png" alt="Ps & Ai Editor">
+                </div>
+                <a href="https://www.photopea.com/" target="blank" class="service-btn">Ps & Ai Editor</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://ipemis.dpe.gov.bd/results" target="blank"> <img src="img/25.png" alt="PSC Results">
+                </div>
+                <a href="https://ipemis.dpe.gov.bd/results" target="blank" class="service-btn">PSC Results</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://eboardresults.com/en/ebr.app/home/" target="blank"> <img src="img/26.png" alt="Education Results">
+                </div>
+                <a href="https://eboardresults.com/en/ebr.app/home/" target="blank" class="service-btn">Education Results</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="http://www.educationboardresults.gov.bd/" target="blank"> <img src="img/27.png" alt="Education Results">
+                </div>
+                <a href="http://www.educationboardresults.gov.bd/" target="blank" class="service-btn">Education Results</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://efile.dhakaeducationboard.gov.bd/index.php/eservice/menu" target="blank"> <img src="img/28.png" alt="Certificate Correction">
+                </div>
+                <a href="https://efile.dhakaeducationboard.gov.bd/index.php/eservice/menu" target="blank" class="service-btn">Certificate Correction</a>
+            </div>
+
+            <div class="service-item">
+                <div class="icon-box">
+                    <a href="https://result.bou.ac.bd/" target="blank"> <img src="img/29.png" alt="OU Result">
+                </div>
+                <a href="https://result.bou.ac.bd/" target="blank" class="service-btn">OU Result</a>
+            </div>
+			
+			
+			<div class="service-item">
+                <div class="icon-box">
+                   <a href="https://gsa.teletalk.com.bd/" target="blank"> <img src="img/30.png" alt="School Admission">
+                </div>
+                <a href="https://gsa.teletalk.com.bd/" target="blank" class="service-btn">School Admission</a>
+            </div>
+
+			
+
+        </div>
+			
+			
+    </div>
+
+    <footer>
+        <p>Jannat Shop &copy; Copyright 2026</p>
+    </footer>
+	
+	
+	
+	
+	<script>
+    const slider = document.getElementById('slider');
+    let index = 0;
+
+    function slideShow() {
+        index++;
+        
+        // যদি ৩ নম্বর ছবির পরে চলে যায়, তবে আবার ১ নম্বর ছবিতে ফিরে আসবে
+        if (index > 2) { 
+            index = 0;
+        }
+        
+        // ছবি সরানোর ক্যালকুলেশন
+        slider.style.transform = `translateX(${-index * 33.33}%)`;
+    }
+
+    // প্রতি ৩০০০ মিলিসেকেন্ড (৩ সেকেন্ড) পরপর ছবি পরিবর্তন হবে
+    setInterval(slideShow, 6000);
+	</script>
+
+</body>
+</html>
